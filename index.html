@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#10162d">
+<title>ミニ3マッチ</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#10162d}
+body{
+ min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:14px;
+ color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ background:radial-gradient(circle at top,#24336b,#10162d 70%);
+ touch-action:manipulation
+}
+.game{
+ width:min(94vw,480px);padding:16px;border-radius:24px;
+ background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);
+ box-shadow:0 18px 50px rgba(0,0,0,.35)
+}
+h1{margin:0 0 10px;text-align:center;font-size:30px}
+.stats{display:flex;gap:10px;margin-bottom:12px}
+.stat{flex:1;text-align:center;background:rgba(0,0,0,.22);padding:9px;border-radius:14px;font-weight:700}
+.stat b{display:block;font-size:23px;margin-top:2px}
+#board{
+ display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:8px;
+ border-radius:19px;background:rgba(0,0,0,.28);aspect-ratio:1/1
+}
+.cell{
+ border:0;padding:0;border-radius:12px;background:rgba(255,255,255,.07);
+ display:grid;place-items:center;transition:.15s;min-width:0
+}
+.cell:active{transform:scale(.92)}
+.cell.selected{outline:4px solid #ffe066;transform:scale(.9)}
+.cell.clearing{opacity:0;transform:scale(.15) rotate(25deg)}
+.candy{
+ width:72%;height:72%;border-radius:50%;display:block;
+ box-shadow:inset -5px -6px 0 rgba(0,0,0,.16),
+ inset 4px 4px 0 rgba(255,255,255,.30),0 3px 7px rgba(0,0,0,.28);
+ position:relative
+}
+.candy:after{
+ content:"";position:absolute;left:22%;top:16%;width:24%;height:16%;
+ border-radius:50%;background:rgba(255,255,255,.45);transform:rotate(-25deg)
+}
+.type0{background:#ff4d6d} .type1{background:#ffd43b} .type2{background:#845ef7}
+.type3{background:#51cf66} .type4{background:#339af0} .type5{background:#ff922b}
+.controls{display:flex;gap:10px;margin-top:12px}
+.controls button{
+ flex:1;border:0;border-radius:14px;padding:13px 10px;font-size:16px;
+ font-weight:800;background:#ffd166;color:#151515
+}
+#message{height:24px;text-align:center;margin-top:8px;font-weight:800;color:#fff2a8}
+.help{font-size:13px;opacity:.82;text-align:center;margin:6px 0 0}
+</style>
+</head>
+<body>
+<main class="game">
+<h1>ミニ3マッチ</h1>
+<div class="stats">
+ <div class="stat">スコア<b id="score">0</b></div>
+ <div class="stat">手数<b id="moves">20</b></div>
+</div>
+<div id="board"><button class="cell" data-r="0" data-c="0" aria-label="1行1列"><span class="candy type5"></span></button><button class="cell" data-r="0" data-c="1" aria-label="1行2列"><span class="candy type3"></span></button><button class="cell" data-r="0" data-c="2" aria-label="1行3列"><span class="candy type3"></span></button><button class="cell" data-r="0" data-c="3" aria-label="1行4列"><span class="candy type2"></span></button><button class="cell" data-r="0" data-c="4" aria-label="1行5列"><span class="candy type5"></span></button><button class="cell" data-r="0" data-c="5" aria-label="1行6列"><span class="candy type1"></span></button><button class="cell" data-r="0" data-c="6" aria-label="1行7列"><span class="candy type0"></span></button><button class="cell" data-r="1" data-c="0" aria-label="2行1列"><span class="candy type4"></span></button><button class="cell" data-r="1" data-c="1" aria-label="2行2列"><span class="candy type0"></span></button><button class="cell" data-r="1" data-c="2" aria-label="2行3列"><span class="candy type1"></span></button><button class="cell" data-r="1" data-c="3" aria-label="2行4列"><span class="candy type3"></span></button><button class="cell" data-r="1" data-c="4" aria-label="2行5列"><span class="candy type4"></span></button><button class="cell" data-r="1" data-c="5" aria-label="2行6列"><span class="candy type0"></span></button><button class="cell" data-r="1" data-c="6" aria-label="2行7列"><span class="candy type5"></span></button><button class="cell" data-r="2" data-c="0" aria-label="3行1列"><span class="candy type4"></span></button><button class="cell" data-r="2" data-c="1" aria-label="3行2列"><span class="candy type3"></span></button><button class="cell" data-r="2" data-c="2" aria-label="3行3列"><span class="candy type2"></span></button><button class="cell" data-r="2" data-c="3" aria-label="3行4列"><span class="candy type3"></span></button><button class="cell" data-r="2" data-c="4" aria-label="3行5列"><span class="candy type4"></span></button><button class="cell" data-r="2" data-c="5" aria-label="3行6列"><span class="candy type0"></span></button><button class="cell" data-r="2" data-c="6" aria-label="3行7列"><span class="candy type2"></span></button><button class="cell" data-r="3" data-c="0" aria-label="4行1列"><span class="candy type3"></span></button><button class="cell" data-r="3" data-c="1" aria-label="4行2列"><span class="candy type0"></span></button><button class="cell" data-r="3" data-c="2" aria-label="4行3列"><span class="candy type4"></span></button><button class="cell" data-r="3" data-c="3" aria-label="4行4列"><span class="candy type5"></span></button><button class="cell" data-r="3" data-c="4" aria-label="4行5列"><span class="candy type0"></span></button><button class="cell" data-r="3" data-c="5" aria-label="4行6列"><span class="candy type5"></span></button><button class="cell" data-r="3" data-c="6" aria-label="4行7列"><span class="candy type4"></span></button><button class="cell" data-r="4" data-c="0" aria-label="5行1列"><span class="candy type1"></span></button><button class="cell" data-r="4" data-c="1" aria-label="5行2列"><span class="candy type3"></span></button><button class="cell" data-r="4" data-c="2" aria-label="5行3列"><span class="candy type5"></span></button><button class="cell" data-r="4" data-c="3" aria-label="5行4列"><span class="candy type2"></span></button><button class="cell" data-r="4" data-c="4" aria-label="5行5列"><span class="candy type2"></span></button><button class="cell" data-r="4" data-c="5" aria-label="5行6列"><span class="candy type0"></span></button><button class="cell" data-r="4" data-c="6" aria-label="5行7列"><span class="candy type5"></span></button><button class="cell" data-r="5" data-c="0" aria-label="6行1列"><span class="candy type1"></span></button><button class="cell" data-r="5" data-c="1" aria-label="6行2列"><span class="candy type4"></span></button><button class="cell" data-r="5" data-c="2" aria-label="6行3列"><span class="candy type0"></span></button><button class="cell" data-r="5" data-c="3" aria-label="6行4列"><span class="candy type0"></span></button><button class="cell" data-r="5" data-c="4" aria-label="6行5列"><span class="candy type2"></span></button><button class="cell" data-r="5" data-c="5" aria-label="6行6列"><span class="candy type2"></span></button><button class="cell" data-r="5" data-c="6" aria-label="6行7列"><span class="candy type1"></span></button><button class="cell" data-r="6" data-c="0" aria-label="7行1列"><span class="candy type3"></span></button><button class="cell" data-r="6" data-c="1" aria-label="7行2列"><span class="candy type4"></span></button><button class="cell" data-r="6" data-c="2" aria-label="7行3列"><span class="candy type2"></span></button><button class="cell" data-r="6" data-c="3" aria-label="7行4列"><span class="candy type1"></span></button><button class="cell" data-r="6" data-c="4" aria-label="7行5列"><span class="candy type0"></span></button><button class="cell" data-r="6" data-c="5" aria-label="7行6列"><span class="candy type0"></span></button><button class="cell" data-r="6" data-c="6" aria-label="7行7列"><span class="candy type1"></span></button></div>
+<div class="controls">
+ <button id="shuffle">シャッフル</button>
+ <button id="restart">最初から</button>
+</div>
+<div id="message"></div>
+<p class="help">隣り合うキャンディを順番にタップ</p>
+</main>
+<script>
+(()=>{
+const SIZE=7,TYPES=6,START=20;
+let board=[[5, 3, 3, 2, 5, 1, 0], [4, 0, 1, 3, 4, 0, 5], [4, 3, 2, 3, 4, 0, 2], [3, 0, 4, 5, 0, 5, 4], [1, 3, 5, 2, 2, 0, 5], [1, 4, 0, 0, 2, 2, 1], [3, 4, 2, 1, 0, 0, 1]],selected=null,score=0,moves=START,locked=false;
+const boardEl=document.getElementById("board"),scoreEl=document.getElementById("score"),
+movesEl=document.getElementById("moves"),messageEl=document.getElementById("message");
+const rand=()=>Math.floor(Math.random()*TYPES);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function makeBoard(){
+ board=Array.from({length:SIZE},()=>Array(SIZE).fill(0));
+ for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+   let v;
+   do{v=rand()}while((c>=2&&board[r][c-1]===v&&board[r][c-2]===v)||
+   (r>=2&&board[r-1][c]===v&&board[r-2][c]===v));
+   board[r][c]=v;
+ }
+}
+function render(clearing=new Set()){
+ boardEl.innerHTML="";
+ for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+   const b=document.createElement("button"); b.className="cell";
+   b.dataset.r=r;b.dataset.c=c;
+   if(selected&&selected.r===r&&selected.c===c)b.classList.add("selected");
+   if(clearing.has(`${r},${c}`))b.classList.add("clearing");
+   const s=document.createElement("span");s.className=`candy type${board[r][c]}`;
+   b.appendChild(s);b.addEventListener("click",tap);boardEl.appendChild(b);
+ }
+ scoreEl.textContent=score;movesEl.textContent=moves;
+}
+const near=(a,b)=>Math.abs(a.r-b.r)+Math.abs(a.c-b.c)===1;
+function swap(a,b){[board[a.r][a.c],board[b.r][b.c]]=[board[b.r][b.c],board[a.r][a.c]]}
+function matches(){
+ const set=new Set();
+ for(let r=0;r<SIZE;r++){
+  let s=0;
+  for(let c=1;c<=SIZE;c++){
+   if(c<SIZE&&board[r][c]===board[r][s])continue;
+   if(c-s>=3)for(let x=s;x<c;x++)set.add(`${r},${x}`);
+   s=c;
+  }
+ }
+ for(let c=0;c<SIZE;c++){
+  let s=0;
+  for(let r=1;r<=SIZE;r++){
+   if(r<SIZE&&board[r][c]===board[s][c])continue;
+   if(r-s>=3)for(let y=s;y<r;y++)set.add(`${y},${c}`);
+   s=r;
+  }
+ }
+ return set;
+}
+function fall(){
+ for(let c=0;c<SIZE;c++){
+  const vals=[];
+  for(let r=SIZE-1;r>=0;r--)if(board[r][c]!==null)vals.push(board[r][c]);
+  for(let r=SIZE-1;r>=0;r--)board[r][c]=vals[SIZE-1-r]??rand();
+ }
+}
+async function resolve(){
+ let chain=0;
+ while(true){
+  const m=matches();if(!m.size)break;chain++;
+  render(m);score+=m.size*10*chain;
+  messageEl.textContent=chain>1?`${chain}連鎖！`:`${m.size}個消えた！`;
+  await sleep(220);
+  for(const k of m){const [r,c]=k.split(",").map(Number);board[r][c]=null}
+  fall();render();await sleep(170);
+ }
+}
+async function tap(e){
+ if(locked||moves<=0)return;
+ const p={r:+e.currentTarget.dataset.r,c:+e.currentTarget.dataset.c};
+ if(!selected){selected=p;render();return}
+ if(selected.r===p.r&&selected.c===p.c){selected=null;render();return}
+ if(!near(selected,p)){selected=p;render();return}
+ locked=true;const first=selected;selected=null;swap(first,p);render();
+ if(!matches().size){
+  await sleep(180);swap(first,p);messageEl.textContent="3つ以上そろえてね";render();
+ }else{
+  moves--;await resolve();if(moves<=0)messageEl.textContent=`ゲーム終了！ スコア ${score}`;
+ }
+ locked=false;
+}
+function restart(){
+ score=0;moves=START;selected=null;locked=false;messageEl.textContent="";
+ makeBoard();render();
+}
+document.getElementById("restart").onclick=restart;
+document.getElementById("shuffle").onclick=()=>{if(!locked){makeBoard();selected=null;messageEl.textContent="シャッフルしたよ";render()}};
+render();
+})();
+</script>
+</body>
+</html>
