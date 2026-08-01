@@ -148,10 +148,27 @@ h1{margin:0 0 8px;text-align:center;font-size:28px;text-shadow:0 4px 18px rgba(0
 .ray.col{width:8px;top:0;bottom:0;animation:rayCol .3s ease-out forwards}
 @keyframes rayRow{from{transform:scaleX(0)}to{transform:scaleX(1);opacity:0}}
 @keyframes rayCol{from{transform:scaleY(0)}to{transform:scaleY(1);opacity:0}}
+
+.audio-unlock{
+  position:absolute;inset:0;z-index:50;display:grid;place-items:center;
+  background:rgba(8,10,28,.72);backdrop-filter:blur(8px)
+}
+.audio-unlock.hidden{display:none}
+.audio-unlock button{
+  border:0;border-radius:18px;padding:16px 22px;font-size:18px;font-weight:950;
+  background:linear-gradient(#fff08a,#ffc83d);color:#171717;
+  box-shadow:0 10px 30px rgba(0,0,0,.35)
+}
+.audio-note{display:block;font-size:12px;margin-top:5px;font-weight:700;opacity:.75}
 </style>
 </head>
 <body>
 <main class="game" id="game">
+<div class="audio-unlock" id="audioUnlock">
+  <button id="enableAudio">🔊 音を有効にする
+    <span class="audio-note">最初に1回だけタップ</span>
+  </button>
+</div>
 <button class="sound-btn" id="sound">🔊</button>
 <h1>ミニ3マッチ Ver.3</h1>
 <div class="stats">
@@ -189,24 +206,46 @@ const comboEl=document.getElementById("combo");
 const bannerEl=document.getElementById("banner");
 const gameEl=document.getElementById("game");
 const soundBtn=document.getElementById("sound");
+const audioUnlock=document.getElementById("audioUnlock");
+const enableAudioBtn=document.getElementById("enableAudio");
+let audioReady=false;
 bestEl.textContent=best;
 
 const rand=()=>Math.floor(Math.random()*TYPES);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
+async function unlockAudio(){
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended")await audioCtx.resume();
+    const buffer=audioCtx.createBuffer(1,1,22050);
+    const source=audioCtx.createBufferSource();
+    source.buffer=buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
+    audioReady=true;
+    audioUnlock.classList.add("hidden");
+    soundOn=true;
+    soundBtn.textContent="🔊";
+    tone(660,.07,"sine",.08);
+    setTimeout(()=>tone(880,.09,"sine",.07),70);
+  }catch(e){
+    messageEl.textContent="音声を有効にできませんでした";
+  }
+}
 function audio(){
   if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==="suspended")audioCtx.resume();
   return audioCtx;
 }
-function tone(freq,d=.08,type="sine",vol=.04,delay=0){
-  if(!soundOn)return;
+function tone(freq,d=.08,type="sine",vol=.08,delay=0){
+  if(!soundOn||!audioReady||!audioCtx)return;
   try{
     const a=audio(),o=a.createOscillator(),g=a.createGain();
     o.type=type;o.frequency.setValueAtTime(freq,a.currentTime+delay);
-    g.gain.setValueAtTime(vol,a.currentTime+delay);
+    g.gain.setValueAtTime(Math.max(.001,vol),a.currentTime+delay);
     g.gain.exponentialRampToValueAtTime(.001,a.currentTime+delay+d);
-    o.connect(g);g.connect(a.destination);o.start(a.currentTime+delay);o.stop(a.currentTime+delay+d);
+    o.connect(g);g.connect(a.destination);
+    o.start(a.currentTime+delay);o.stop(a.currentTime+delay+d+.02);
   }catch(e){}
 }
 function sTap(){tone(470,.045,"sine",.035)}
@@ -459,7 +498,7 @@ async function activateDirect(a,b){
 }
 async function tap(e){
   if(locked||moves<=0)return;
-  try{audio()}catch(err){}
+  if(!audioReady){ await unlockAudio(); }
   sTap();
   const p={r:+e.currentTarget.dataset.r,c:+e.currentTarget.dataset.c};
   if(!selected){selected=p;render();return}
@@ -493,10 +532,22 @@ document.getElementById("restart").onclick=()=>{sTap();restart()};
 document.getElementById("shuffle").onclick=()=>{
   if(!locked){sTap();makeBoard();selected=null;messageEl.textContent="シャッフルしたよ";render()}
 };
-soundBtn.onclick=()=>{
-  soundOn=!soundOn;soundBtn.textContent=soundOn?"🔊":"🔇";
+enableAudioBtn.addEventListener("click",unlockAudio);
+enableAudioBtn.addEventListener("touchend",(e)=>{e.preventDefault();unlockAudio()},{passive:false});
+soundBtn.onclick=async()=>{
+  if(!audioReady){
+    await unlockAudio();
+    return;
+  }
+  soundOn=!soundOn;
+  soundBtn.textContent=soundOn?"🔊":"🔇";
   if(soundOn)sTap();
 };
+document.addEventListener("visibilitychange",async()=>{
+  if(document.visibilityState==="visible"&&audioCtx&&audioCtx.state==="suspended"){
+    try{await audioCtx.resume()}catch(e){}
+  }
+});
 render();
 })();
 </script>
